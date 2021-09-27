@@ -42,10 +42,19 @@ describe("complete()", function() {
 });
 
 describe("saveToFile()", function() {
-    it("should have a single TODO", async function() {
-        let todos = new Todos();
-        todos.add("save a CSV");
-        await todos.saveToFile();
+    beforeEach(function () {
+        this.todos = new Todos();
+        this.todos.add("save a CSV");
+    });
+
+    this.afterEach(function () {
+        if (fs.existsSync("todos.csv")) {
+            fs.unlinkSync("todos.csv");
+        }
+    });
+
+    it("should have a single TODO without error", async function() {
+        await this.todos.saveToFile();
 
         assert.strictEqual(fs.existsSync('todos.csv'), true);
         let expectedFileContents = "Title,Completed\nsave a CSV,false\n";
@@ -54,10 +63,8 @@ describe("saveToFile()", function() {
     });
 
     it("should save a single TODO that's completed", async function () {
-        let todos = new Todos();
-        todos.add("save a CSV");
-        todos.complete("save a CSV");
-        await todos.saveToFile();
+        this.todos.complete("save a CSV");
+        await this.todos.saveToFile();
 
         assert.strictEqual(fs.existsSync('todos.csv'), true);
         let expectedFileContents = "Title,Completed\nsave a CSV,true\n";
